@@ -1,0 +1,9 @@
+.agentbase/
+.env
+node_modules/
+uploads/
+*.log
+.DS_Store
+.greennode.json
+dist/
+uploads/

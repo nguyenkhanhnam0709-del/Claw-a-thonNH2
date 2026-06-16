@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zalopay Legal Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Variables - Zalopay Brand */
+    :root {
+      --zp-blue: #0033C9;
+      --zp-green: #00CF6A;
+      --zp-light-blue: #00B4FF;
+      --zp-purple: #6F0CDF;
+      --zp-yellow: #FFD729;
+      --zp-orange: #FF8A00;
+      --zp-red: #EF4444;
+      --zp-bg: #F5F7FA;
+      --zp-white: #FFFFFF;
+      --zp-text: #1A1A1A;
+      --zp-text-muted: #6B7280;
+      --zp-border: #E5E7EB;
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-family);
+      background: var(--zp-bg);
+      color: var(--zp-text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      background: var(--zp-white);
+      border-bottom: 1px solid var(--zp-border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo { display: flex; align-items: center; gap: 8px; }
+    .logo img { height: 60px; }
+    .logo-text { font-size: 20px; font-weight: 700; background: linear-gradient(135deg, var(--zp-blue) 0%, var(--zp-green) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .header-title { font-size: 14px; font-weight: 500; color: var(--zp-text-muted); margin-left: auto; display: flex; align-items: center; gap: 8px; }
+    .header-badge { background: var(--zp-purple); color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+
+    /* Main Container */
+    .container {
+      flex: 1;
+      display: flex;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 24px;
+      gap: 24px;
+    }
+
+    /* Sidebar */
+    .sidebar { width: 300px; flex-shrink: 0; }
+    .sidebar-card {
+      background: var(--zp-white);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .sidebar-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--zp-text);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sidebar-title::before {
+      content: '';
+      width: 4px; height: 16px;
+      background: var(--zp-blue);
+      border-radius: 2px;
+    }
+
+    .contract-list { display: flex; flex-direction: column; gap: 8px; max-height: 70vh; overflow-y: auto; }
+    .contract-item {
+      padding: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid var(--zp-border);
+    }
+    .contract-item:hover { background: var(--zp-bg); border-color: var(--zp-blue); transform: translateX(4px); }
+    .contract-item.active { background: rgba(0, 51, 201, 0.06); border-color: var(--zp-blue); }
+    .contract-item .merchant-name { font-size: 14px; font-weight: 600; color: var(--zp-text); margin-bottom: 2px; }
+    .contract-item .bd-email { font-size: 12px; color: var(--zp-text-muted); margin-bottom: 8px; word-break: break-all; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge.pending { background: #FEF3C7; color: #92400E; }
+    .badge.approved { background: #D1FAE5; color: #065F46; }
+    .badge.rejected { background: #FEE2E2; color: #991B1B; }
+    .badge.revision_requested { background: #FFEDD5; color: #9A3412; }
+
+    .empty-state { text-align: center; padding: 32px 12px; color: var(--zp-text-muted); font-size: 13px; }
+    .empty-state .icon { font-size: 40px; margin-bottom: 10px; }
+
+    /* Chat Area */
+    .chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--zp-white);
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    .chat-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--zp-border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .chat-avatar {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--zp-blue) 0%, var(--zp-green) 100%);
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 700; font-size: 16px;
+    }
+    .chat-title { font-size: 16px; font-weight: 600; }
+    .chat-subtitle { font-size: 13px; color: var(--zp-text-muted); }
+    .status-dot {
+      width: 9px; height: 9px; border-radius: 50%;
+      background: var(--zp-green); margin-left: auto;
+      box-shadow: 0 0 0 3px rgba(0,207,106,0.15);
+    }
+
+    /* Selected contract banner */
+    .selected-info {
+      display: none;
+      padding: 12px 20px;
+      background: rgba(0, 51, 201, 0.04);
+      border-bottom: 1px solid var(--zp-border);
+      font-size: 13px;
+      color: var(--zp-text);
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+    .selected-info.show { display: flex; }
+    .selected-info .lbl { color: var(--zp-text-muted); }
+
+    /* Messages */
+    .messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+    .message { display: flex; gap: 12px; max-width: 85%; }
+    .message.user { flex-direction: row-reverse; align-self: flex-end; }
+    .message-avatar {
+      width: 32px; height: 32px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 600; flex-shrink: 0;
+    }
+    .message.bot .message-avatar { background: linear-gradient(135deg, var(--zp-blue) 0%, var(--zp-green) 100%); color: white; }
+    .message.user .message-avatar { background: var(--zp-bg); color: var(--zp-text-muted); }
+    .message-content { background: var(--zp-bg); padding: 12px 16px; border-radius: 12px; border-top-left-radius: 4px; }
+    .message.user .message-content { background: var(--zp-blue); color: white; border-top-left-radius: 12px; border-top-right-radius: 4px; }
+    .message-text { font-size: 14px; line-height: 1.55; }
+    .message-text b, .message-text strong { font-weight: 600; }
+    .message-time { font-size: 11px; color: var(--zp-text-muted); margin-top: 4px; }
+    .message.user .message-time { color: rgba(255,255,255,0.7); text-align: right; }
+    .tools-used { font-size: 11px; color: var(--zp-text-muted); margin-top: 4px; font-style: italic; }
+
+    /* Typing */
+    .typing-indicator { display: none; padding: 12px 16px 0 20px; }
+    .typing-indicator.show { display: flex; gap: 4px; }
+    .typing-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--zp-text-muted); animation: typing 1.4s infinite; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing { 0%,60%,100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-4px); opacity: 1; } }
+
+    /* Quick actions */
+    .quick-actions { display: flex; gap: 8px; padding: 12px 20px 4px; flex-wrap: wrap; }
+    .quick-btn {
+      padding: 8px 14px; border-radius: 20px;
+      border: 1px solid var(--zp-border); background: var(--zp-white);
+      font-size: 13px; font-weight: 500; color: var(--zp-text);
+      cursor: pointer; transition: all 0.2s; font-family: var(--font-family);
+    }
+    .quick-btn:hover { border-color: var(--zp-blue); color: var(--zp-blue); background: rgba(0,51,201,0.04); }
+
+    /* Decision buttons */
+    .decision-bar { display: flex; gap: 10px; padding: 8px 20px 4px; flex-wrap: wrap; }
+    .decision-btn {
+      flex: 1; min-width: 120px;
+      padding: 11px 16px; border-radius: 12px; border: none;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      font-family: var(--font-family); color: white;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: all 0.2s;
+    }
+    .decision-btn.approve { background: var(--zp-green); }
+    .decision-btn.revision { background: var(--zp-orange); }
+    .decision-btn.reject { background: var(--zp-red); }
+    .decision-btn:hover:not(:disabled) { filter: brightness(0.94); transform: translateY(-1px); }
+    .decision-btn:disabled { background: var(--zp-border); color: var(--zp-text-muted); cursor: not-allowed; }
+
+    /* Input */
+    .input-area { padding: 16px 20px; border-top: 1px solid var(--zp-border); display: flex; gap: 12px; align-items: flex-end; }
+    .input-wrapper { flex: 1; position: relative; }
+    .chat-input {
+      width: 100%; padding: 14px 16px;
+      border: 1px solid var(--zp-border); border-radius: 12px;
+      font-size: 14px; font-family: var(--font-family);
+      resize: none; outline: none; transition: border-color 0.2s;
+    }
+    .chat-input:focus { border-color: var(--zp-blue); }
+    .chat-input::placeholder { color: var(--zp-text-muted); }
+    .send-btn {
+      width: 48px; height: 48px; border-radius: 12px; border: none;
+      background: var(--zp-blue); color: white; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+    }
+    .send-btn:hover { background: #002A99; transform: scale(1.02); }
+    .send-btn:disabled { background: var(--zp-border); cursor: not-allowed; transform: none; }
+    .send-btn svg { width: 20px; height: 20px; }
+
+    @media (max-width: 768px) {
+      .container { flex-direction: column; padding: 16px; }
+      .sidebar { width: 100%; }
+      .contract-list { max-height: 220px; }
+      .message { max-width: 95%; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <img src="/logo.png" alt="Zalopay" onerror="this.style.display='none'">
+    </div>
+    <span class="header-title">
+      Legal Contract Review Agent
+      <span class="header-badge">POV: Legal</span>
+    </span>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-card">
+        <h3 class="sidebar-title">Hợp đồng chờ rà soát</h3>
+        <div class="contract-list" id="contractList">
+          <div class="empty-state">
+            <div class="icon">📭</div>
+            <div>Không có hợp đồng nào chờ rà soát</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Chat Area -->
+    <div class="chat-area">
+      <div class="chat-header">
+        <img src="/logo.png" alt="Zalopay" style="width:40px;height:40px;border-radius:12px;object-fit:contain;">
+
+        <div>
+          <div class="chat-title">Legal Review Agent</div>
+          <div class="chat-subtitle">Rà soát & phê duyệt hợp đồng merchant</div>
+        </div>
+        <div class="status-dot" title="Online"></div>
+      </div>
+
+      <div class="selected-info" id="selectedInfo">
+        <span><span class="lbl">Merchant:</span> <b id="infoMerchant">-</b></span>
+        <span><span class="lbl">BD:</span> <span id="infoBd">-</span></span>
+        <span><span class="lbl">Trạng thái:</span> <span id="infoStatus">-</span></span>
+      </div>
+
+      <div class="messages" id="messages"></div>
+
+      <div class="typing-indicator" id="typingIndicator">
+        <span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>
+      </div>
+
+      <div class="quick-actions">
+        <button class="quick-btn" onclick="sendQuickMessage('Liệt kê các hợp đồng đang chờ rà soát')">📋 Danh sách chờ</button>
+        <button class="quick-btn" onclick="sendQuickMessage('Cho tôi xem quy trình Phase 2')">📝 Quy trình</button>
+        <button class="quick-btn" onclick="sendQuickMessage('Cho tôi biết cần rà soát những điều khoản gì')">✅ Checklist</button>
+      </div>
+
+      <div class="decision-bar">
+        <button class="decision-btn approve" id="approveBtn" onclick="submitReview('approve')" disabled>✅ Phê duyệt</button>
+        <button class="decision-btn revision" id="revisionBtn" onclick="submitReview('revision')" disabled>✏️ Yêu cầu chỉnh sửa</button>
+        <button class="decision-btn reject" id="rejectBtn" onclick="submitReview('reject')" disabled>❌ Từ chối</button>
+      </div>
+
+      <div class="input-area">
+        <div class="input-wrapper">
+          <textarea class="chat-input" id="chatInput" placeholder="Nhập tin nhắn..." rows="1" onkeydown="handleKeyDown(event)"></textarea>
+        </div>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let isTyping = false;
+    let selectedMerchant = null;
+    let merchants = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadPendingContracts();
+      addBotMessage('Xin chào! 👋<br><br>Tôi là <b>Legal Review Agent</b>, hỗ trợ đội Legal Zalopay rà soát và phê duyệt hợp đồng dịch vụ merchant (Phase 2).<br><br>Chọn một hợp đồng ở danh sách bên trái, hoặc nhập tin nhắn để bắt đầu.');
+      setInterval(loadPendingContracts, 30000);
+    });
+
+    async function loadPendingContracts() {
+      try {
+        const res = await fetch('/api/contracts/status');
+        const data = await res.json();
+        if (data.success && data.data) { merchants = data.data; renderList(); }
+      } catch (e) { console.error('load contracts', e); }
+    }
+
+    function renderList() {
+      const c = document.getElementById('contractList');
+      if (!merchants.length) {
+        c.innerHTML = '<div class="empty-state"><div class="icon">📭</div><div>Không có hợp đồng nào chờ rà soát</div></div>';
+        return;
+      }
+      c.innerHTML = merchants.map(m => `
+        <div class="contract-item ${selectedMerchant?.merchantName === m.merchantName ? 'active' : ''}" onclick="selectMerchant('${m.merchantName.replace(/'/g, "\\'")}')">
+          <div class="merchant-name">${m.merchantName}</div>
+          <div class="bd-email">📧 ${m.bdEmail}</div>
+          <span class="badge ${m.status.toLowerCase()}">${statusText(m.status)}</span>
+        </div>`).join('');
+    }
+
+    function statusText(s) {
+      switch (s) {
+        case 'PENDING': return 'Chờ rà soát';
+        case 'APPROVED': return 'Đã duyệt';
+        case 'REJECTED': return 'Từ chối';
+        case 'REVISION_REQUESTED': return 'Cần chỉnh sửa';
+        default: return s;
+      }
+    }
+
+    function selectMerchant(name) {
+      selectedMerchant = merchants.find(m => m.merchantName === name);
+      if (!selectedMerchant) return;
+      renderList();
+
+      document.getElementById('selectedInfo').classList.add('show');
+      document.getElementById('infoMerchant').textContent = selectedMerchant.merchantName;
+      document.getElementById('infoBd').textContent = selectedMerchant.bdEmail;
+      document.getElementById('infoStatus').textContent = statusText(selectedMerchant.status);
+
+      const isPending = selectedMerchant.status === 'PENDING';
+      document.getElementById('approveBtn').disabled = !isPending;
+      document.getElementById('revisionBtn').disabled = !isPending;
+      document.getElementById('rejectBtn').disabled = !isPending;
+
+      const msg = `Tôi cần rà soát hợp đồng của merchant ${name}. Đây là hợp đồng của BD ${selectedMerchant.bdEmail}`;
+      addUserMessage(msg);
+      sendToAgent(msg);
+    }
+
+    function handleKeyDown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    }
+    const ci = document.getElementById('chatInput');
+    ci.addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 120) + 'px'; });
+
+    async function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const message = input.value.trim();
+      if (!message || isTyping) return;
+      addUserMessage(message);
+      input.value = ''; input.style.height = 'auto';
+      sendToAgent(message);
+    }
+
+    async function sendToAgent(message) {
+      showTyping();
+      document.getElementById('sendBtn').disabled = true;
+      try {
+        const res = await fetch('/api/chat/legal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message, context: [] })
+        });
+        const data = await res.json();
+        hideTyping();
+        if (data.success) addBotMessage(renderMd(data.data.message), 'html', data.data.tools_used);
+        else addBotMessage('❌ Xin lỗi, có lỗi xảy ra: ' + (data.error || 'Không xác định'));
+      } catch (e) {
+        hideTyping();
+        addBotMessage('❌ Không thể kết nối đến agent.');
+      }
+      document.getElementById('sendBtn').disabled = false;
+    }
+
+    function sendQuickMessage(m) { document.getElementById('chatInput').value = m; sendMessage(); }
+
+    async function submitReview(action) {
+      if (!selectedMerchant) { alert('Vui lòng chọn một hợp đồng từ danh sách'); return; }
+      let reason, revisionItems, notes;
+      if (action === 'reject') {
+        reason = prompt('Lý do từ chối hợp đồng:'); if (!reason) return;
+      } else if (action === 'revision') {
+        const raw = prompt('Các điều khoản cần chỉnh sửa (phân tách bằng ";"):'); if (!raw) return;
+        revisionItems = raw.split(';').map(s => s.trim()).filter(Boolean);
+      } else { notes = 'Hợp đồng đã được phê duyệt bởi Legal'; }
+
+      try {
+        const res = await fetch('/api/legal/review', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            merchantName: selectedMerchant.merchantName,
+            bdEmail: selectedMerchant.bdEmail,
+            action, reason, revisionItems,
+            notes: action === 'approve' ? notes : undefined
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          const ns = action === 'approve' ? 'APPROVED' : action === 'reject' ? 'REJECTED' : 'REVISION_REQUESTED';
+          selectedMerchant.status = ns;
+          merchants = merchants.map(m => m.merchantName === selectedMerchant.merchantName ? selectedMerchant : m);
+          renderList(); selectMerchant(selectedMerchant.merchantName);
+          const t = action === 'approve' ? 'phê duyệt' : action === 'reject' ? 'từ chối' : 'yêu cầu chỉnh sửa';
+          addBotMessage(`✅ Đã ${t} hợp đồng merchant <b>${selectedMerchant.merchantName}</b>. Email thông báo đã được gửi cho BD.`);
+        } else {
+          addBotMessage('❌ ' + (data.error || 'Có lỗi xảy ra'));
+        }
+      } catch (e) {
+        addBotMessage('❌ Không thể gửi yêu cầu. Vui lòng thử lại.');
+      }
+    }
+
+    function nowTime() { return new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }); }
+
+    function addUserMessage(text) {
+      document.getElementById('messages').innerHTML += `
+        <div class="message user">
+          <div class="message-avatar">👤</div>
+          <div class="message-content"><div class="message-text">${escapeHtml(text)}</div><div class="message-time">${nowTime()}</div></div>
+        </div>`;
+      scrollBottom();
+    }
+
+    function addBotMessage(html, format = 'html', tools = []) {
+      const toolsHtml = (tools && tools.length) ? `<div class="tools-used">Tools: ${tools.join(', ')}</div>` : '';
+      document.getElementById('messages').innerHTML += `
+        <div class="message bot">
+          <img src="/logo.png" alt="LG" style="width:32px;height:32px;border-radius:10px;object-fit:contain;flex-shrink:0;">
+
+          <div class="message-content"><div class="message-text">${format === 'html' ? html : escapeHtml(html)}</div>${toolsHtml}<div class="message-time">${nowTime()}</div></div>
+        </div>`;
+      scrollBottom();
+    }
+
+    function showTyping() { isTyping = true; document.getElementById('typingIndicator').classList.add('show'); scrollBottom(); }
+    function hideTyping() { isTyping = false; document.getElementById('typingIndicator').classList.remove('show'); }
+    function scrollBottom() { const m = document.getElementById('messages'); m.scrollTop = m.scrollHeight; }
+    function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+    // Lightweight Markdown -> HTML so **bold**, lists and --- render properly
+    function renderMd(t) {
+      if (t == null) return '';
+      return String(t)
+        .replace(/^\s*#{1,6}\s+(.*)$/gm, '<strong>$1</strong>')   // # / ## / ### headings
+        .replace(/\*\*([\s\S]+?)\*\*/g, '<strong>$1</strong>')   // **bold**
+        .replace(/__([\s\S]+?)__/g, '<strong>$1</strong>')        // __bold__
+        .replace(/^\s*---\s*$/gm, '<hr>')                          // --- divider
+        .replace(/^[ \t]*[-*]\s+/gm, '• ')                         // - / * bullets
+        .replace(/\n/g, '<br>');                                   // newlines
+    }
+  </script>
+</body>
+</html>
