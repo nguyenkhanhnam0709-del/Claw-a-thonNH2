@@ -1,0 +1,48 @@
+{
+  "phases": [
+    {
+      "phaseNumber": 1,
+      "phase": "Thẩm định Merchant",
+      "summary": "BD gửi email hồ sơ → CPL review → Approve/Reject",
+      "dept": "Compliance",
+      "pic": "KhoaNVM",
+      "picEmail": "hungnqvng@gmail.com",
+      "picTasks": "Review giấy phép kinh doanh",
+      "bdInfo": "Giấy phép kinh doanh Merchant",
+      "requiredDocuments": ["Giấy phép kinh doanh"]
+    },
+    {
+      "phaseNumber": 2,
+      "phase": "Review Hợp đồng",
+      "summary": "BD gửi email draft HĐ + CPL confirm → LG review → Approve",
+      "dept": "Legal",
+      "pic": "TuPNC",
+      "picEmail": "vnglegal@gmail.com",
+      "picTasks": "LG review hợp đồng dịch vụ và các điều khoản điều chỉnh từ phía merchant",
+      "bdInfo": "Draft hợp đồng (HĐ)",
+      "requiredDocuments": ["Draft hợp đồng"]
+    },
+    {
+      "phaseNumber": 3,
+      "phase": "Tích hợp kỹ thuật",
+      "summary": "BD tạo ticket Jira gồm thông tin Tạo App ID trên Sandbox → Tích hợp → QC test → Production",
+      "dept": "Tech",
+      "pic": "NhanNĐT",
+      "picEmail": "hieulv3@vng.com.vn",
+      "picTasks": "Tech team tạo App ID và hỗ trợ merchant tích hợp Zalopay Gateway API. Quy trình gồm 2 môi trường: Sandbox (test) và Production.",
+      "bdInfo": "Jira ticket cho Tech team",
+      "requiredDocuments": ["Thông tin tích hợp"]
+    },
+    {
+      "phaseNumber": 4,
+      "phase": "Tạo FA Code",
+      "summary": "BD gửi email thông tin → FA tạo PaymentID → Cung cấp cho MC",
+      "dept": "Accounting",
+      "pic": "ChienNM",
+      "picEmail": "quochung.ng4801.work@gmail.com",
+      "picTasks": "Tạo PaymentID (Mã FA), Mã thanh toán (P-xxxxx), cấu hình nguồn tiền bank/wallet",
+      "bdInfo": "Mã số thuế, tài khoản ngân hàng nhận tiền",
+      "requiredDocuments": ["Mã số thuế", "Tài khoản ngân hàng"]
+    }
+  ]
+}

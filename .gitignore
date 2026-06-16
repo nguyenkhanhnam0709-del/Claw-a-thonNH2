@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Secrets / credentials (NEVER commit)
+.env
+.env.local
+.greennode.json
+
+# Runtime
+uploads/
+.agentbase/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,34 @@
+{
+  "useCases": [
+    {
+      "id": 1,
+      "name": "Giải đáp quy trình Onboarding cho BD",
+      "description": "Mô tả các quy trình chung và các thông tin BD cần chuẩn bị cho mỗi Phase",
+      "action": "getProcessOverview"
+    },
+    {
+      "id": 2,
+      "name": "BD điền/nộp các thông tin tài liệu yêu cầu ở từng Phase",
+      "description": "Collect thông tin và đối chiếu các tài liệu/thông tin yêu cầu ở từng Phase và phản hồi lại: Đủ/Thiếu: [thông tin bị thiếu]",
+      "action": "validateDocuments"
+    },
+    {
+      "id": 3,
+      "name": "BD nộp đủ thông tin/tài liệu yêu cầu ở Phase 1 OR 2 OR 4",
+      "description": "Tạo email theo template ở Sheet [Template]",
+      "action": "generateEmail"
+    },
+    {
+      "id": 4,
+      "name": "BD nộp đủ thông tin/tài liệu yêu cầu ở Phase 3",
+      "description": "Tạo ticket template theo template ở Sheet [Ticket Template]",
+      "action": "generateTicket"
+    },
+    {
+      "id": 5,
+      "name": "BD xác nhận template email/ticket",
+      "description": "Gửi email cho PIC",
+      "action": "simulateSendEmail"
+    }
+  ]
+}

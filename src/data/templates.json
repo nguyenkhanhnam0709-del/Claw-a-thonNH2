@@ -1,0 +1,36 @@
+{
+  "templates": {
+    "email_phase1": {
+      "type": "email",
+      "phase": 1,
+      "isHtml": true,
+      "subject": "[Onboarding] Thẩm định Merchant - {{merchantName}}",
+      "body": "<p>Hi {{picName}},</p><p>Biz đang onboarding MC <strong>{{merchantName}}</strong> mới cho giải pháp cổng thanh toán ZaloPay.</p><p>Nhờ anh/chị hỗ trợ review các tài liệu đính kèm!</p><p>Nếu cần bổ sung thông tin gì, nhờ anh/chị share lại cho Biz với ạ!</p><p>Best regards,<br>Biz Team</p>",
+      "variables": ["picName", "merchantName"]
+    },
+    "email_phase2": {
+      "type": "email",
+      "phase": 2,
+      "isHtml": true,
+      "subject": "[Onboarding] Review Hợp đồng - {{merchantName}}",
+      "body": "<p>Hi {{picName}},</p>\n<p>Biz đang onboarding Merchant <strong>{{merchantName}}</strong> mới cho giải pháp cổng thanh toán ZaloPay.</p>\n<p>Nhờ anh/chị hỗ trợ <strong>review draft hợp đồng dịch vụ</strong> đính kèm.</p>\n<p>Thông tin Merchant:</p>\n<ul>\n<li>Tên Merchant: {{merchantName}}</li>\n<li>Mã số thuế: {{taxId}}</li>\n</ul>\n<p>Nếu cần bổ sung thông tin gì, nhờ anh/chị share lại cho Biz với ạ!</p>\n<p>Best regards,<br>Biz Team</p>",
+      "variables": ["picName", "merchantName", "taxId"]
+    },
+    "email_phase4": {
+      "type": "email",
+      "phase": 4,
+      "isHtml": true,
+      "subject": "[Onboarding] Tạo FA Code - {{merchantName}}",
+      "body": "<p>Hi {{picName}},</p>\n<p>Biz đang onboarding Merchant <strong>{{merchantName}}</strong> mới cho giải pháp cổng thanh toán ZaloPay.</p>\n<p>Nhờ anh/chị hỗ trợ <strong>tạo FA Code</strong> với thông tin sau:</p>\n<table style=\"border-collapse: collapse; margin: 15px 0;\">\n<tr><td style=\"padding: 5px 15px 5px 0;\"><strong>Tên Merchant:</strong></td><td style=\"padding: 5px 0;\">{{merchantName}}</td></tr>\n<tr><td style=\"padding: 5px 15px 5px 0;\"><strong>Mã số thuế:</strong></td><td style=\"padding: 5px 0;\">{{taxId}}</td></tr>\n<tr><td style=\"padding: 5px 15px 5px 0;\"><strong>Tài khoản ngân hàng:</strong></td><td style=\"padding: 5px 0;\">{{bankAccount}}</td></tr>\n<tr><td style=\"padding: 5px 15px 5px 0;\"><strong>Ngân hàng:</strong></td><td style=\"padding: 5px 0;\">{{bankName}}</td></tr>\n</table>\n<p>Best regards,<br>Biz Team</p>",
+      "variables": ["picName", "merchantName", "taxId", "bankAccount", "bankName"]
+    },
+    "ticket_phase3": {
+      "type": "ticket",
+      "phase": 3,
+      "isHtml": false,
+      "subject": "[Onboarding] Tích hợp thanh toán - {{merchantName}}",
+      "body": "Merchant: {{merchantName}}\nPhương thức thanh toán:\n- Zalopay: {{zalopay}}\n- VQR: {{vqr}}\n- Credit Card: {{creditCard}}\n\nYêu cầu: Tạo App ID và hỗ trợ tích hợp",
+      "variables": ["merchantName", "zalopay", "vqr", "creditCard"]
+    }
+  }
+}

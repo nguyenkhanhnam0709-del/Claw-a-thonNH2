@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zalopay Merchant Onboarding Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Variables - Zalopay Brand */
+    :root {
+      --zp-blue: #0033C9;
+      --zp-green: #00CF6A;
+      --zp-light-blue: #00B4FF;
+      --zp-neon-green: #A1FF00;
+      --zp-purple: #6F0CDF;
+      --zp-yellow: #FFD729;
+      --zp-orange: #FF8A00;
+      --zp-bg: #F5F7FA;
+      --zp-white: #FFFFFF;
+      --zp-text: #1A1A1A;
+      --zp-text-muted: #6B7280;
+      --zp-border: #E5E7EB;
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-family);
+      background: var(--zp-bg);
+      color: var(--zp-text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      background: var(--zp-white);
+      border-bottom: 1px solid var(--zp-border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo { height: 32px; display: flex; align-items: center; gap: 8px; }
+    .logo img { height: 100%; }
+    .header-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--zp-text-muted);
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header-badge {
+      background: var(--zp-green);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Main Container */
+    .container {
+      flex: 1;
+      display: flex;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 24px;
+      gap: 24px;
+      min-height: 0;
+    }
+
+    /* Sidebar */
+    .sidebar { width: 280px; flex-shrink: 0; }
+    .sidebar-card {
+      background: var(--zp-white);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .sidebar-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--zp-text);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sidebar-title::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: var(--zp-blue);
+      border-radius: 2px;
+    }
+
+    /* Phase Cards */
+    .phase-list { display: flex; flex-direction: column; gap: 10px; }
+    .phase-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+      background: var(--zp-bg);
+    }
+    .phase-item:hover { border-color: var(--zp-blue); transform: translateX(4px); }
+    .phase-item.active { background: rgba(0, 51, 201, 0.08); border-color: var(--zp-blue); }
+    .phase-number {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+    .phase-1 .phase-number { background: var(--zp-orange); }
+    .phase-2 .phase-number { background: var(--zp-purple); }
+    .phase-3 .phase-number { background: var(--zp-light-blue); }
+    .phase-4 .phase-number { background: var(--zp-green); }
+    .phase-info { flex: 1; min-width: 0; }
+    .phase-name { font-size: 14px; font-weight: 600; color: var(--zp-text); }
+    .phase-dept { font-size: 12px; color: var(--zp-text-muted); }
+    .phase-status { width: 10px; height: 10px; border-radius: 50%; background: var(--zp-green); flex-shrink: 0; }
+
+    /* Chat Area */
+    .chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--zp-white);
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      overflow: hidden;
+      min-height: 0;
+    }
+    .chat-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--zp-border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .chat-title { font-size: 16px; font-weight: 600; }
+    .chat-subtitle { font-size: 13px; color: var(--zp-text-muted); }
+
+    /* Messages */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .message { display: flex; gap: 12px; max-width: 85%; }
+    .message.user { flex-direction: row-reverse; align-self: flex-end; }
+    .message-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .message.user .message-avatar { background: var(--zp-bg); color: var(--zp-text-muted); }
+    .message-content {
+      background: var(--zp-bg);
+      padding: 12px 16px;
+      border-radius: 12px;
+      border-top-left-radius: 4px;
+    }
+    .message.user .message-content {
+      background: var(--zp-blue);
+      color: white;
+      border-top-left-radius: 12px;
+      border-top-right-radius: 4px;
+    }
+    .message-text { font-size: 14px; line-height: 1.5; word-wrap: break-word; }
+    .message-text b, .message-text strong { font-weight: 600; }
+    .message-text ul { margin: 4px 0; padding-left: 20px; }
+    .message-text code {
+      background: rgba(0,0,0,0.06);
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-family: 'SF Mono', monospace;
+      font-size: 13px;
+    }
+    .message-time { font-size: 11px; color: var(--zp-text-muted); margin-top: 4px; }
+    .message.user .message-time { color: rgba(255,255,255,0.7); text-align: right; }
+    .message-tools { font-size: 11px; color: var(--zp-text-muted); margin-top: 6px; font-style: italic; }
+
+    /* Input Area */
+    .input-area {
+      padding: 16px 20px;
+      border-top: 1px solid var(--zp-border);
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+    .input-wrapper { flex: 1; position: relative; }
+    .chat-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid var(--zp-border);
+      border-radius: 12px;
+      font-size: 14px;
+      font-family: var(--font-family);
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .chat-input:focus { border-color: var(--zp-blue); }
+    .chat-input::placeholder { color: var(--zp-text-muted); }
+    .send-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      border: none;
+      background: var(--zp-blue);
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .send-btn:hover { background: #002A99; transform: scale(1.02); }
+    .send-btn:disabled { background: var(--zp-border); cursor: not-allowed; transform: none; }
+    .send-btn svg { width: 20px; height: 20px; }
+    .attach-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      border: 1px solid var(--zp-border);
+      background: var(--zp-white);
+      color: var(--zp-text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .attach-btn:hover { border-color: var(--zp-blue); color: var(--zp-blue); background: rgba(0, 51, 201, 0.04); }
+    .attach-btn.has-files { background: rgba(0, 51, 201, 0.1); border-color: var(--zp-blue); color: var(--zp-blue); }
+
+    /* File List */
+    .file-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      background: var(--zp-bg);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--zp-text);
+    }
+    .file-item .remove { cursor: pointer; color: var(--zp-text-muted); font-weight: bold; }
+    .file-item .remove:hover { color: #EF4444; }
+
+    /* Quick Actions */
+    .quick-actions { display: flex; gap: 8px; padding: 0 20px 16px; flex-wrap: wrap; }
+    .quick-btn {
+      padding: 8px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--zp-border);
+      background: var(--zp-white);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--zp-text);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--font-family);
+    }
+    .quick-btn:hover { border-color: var(--zp-blue); color: var(--zp-blue); background: rgba(0, 51, 201, 0.04); }
+
+    /* Typing Indicator */
+    .typing-indicator {
+      display: none;
+      padding: 12px 16px;
+      margin: 0 20px;
+      background: var(--zp-bg);
+      border-radius: 12px;
+      border-top-left-radius: 4px;
+      width: fit-content;
+    }
+    .typing-indicator.show { display: flex; gap: 4px; }
+    .typing-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--zp-text-muted); animation: typing 1.4s infinite; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-4px); opacity: 1; }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container { flex-direction: column; padding: 16px; }
+      .sidebar { width: 100%; }
+      .phase-list { flex-direction: row; overflow-x: auto; padding-bottom: 8px; }
+      .phase-item { min-width: 200px; flex-shrink: 0; }
+      .message { max-width: 95%; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <img src="/logo.png" alt="Zalopay" style="height: 60px;">
+    </div>
+    <span class="header-title">
+      Merchant Onboarding Agent
+      <span class="header-badge">POV: BD</span>
+    </span>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-card">
+        <h3 class="sidebar-title">Quy trình Onboarding</h3>
+        <div class="phase-list" id="phaseList">
+          <!-- Phase items loaded via API -->
+        </div>
+      </div>
+    </aside>
+
+    <!-- Chat Area -->
+    <div class="chat-area">
+      <div class="chat-header">
+        <img src="/logo.png" alt="Zalopay" style="width: 40px; height: 40px; border-radius: 12px; object-fit: contain;">
+        <div>
+          <div class="chat-title">Merchant Onboarding Assistant</div>
+          <div class="chat-subtitle">Hỗ trợ quy trình onboarding merchant</div>
+        </div>
+      </div>
+
+      <div class="messages" id="messages"></div>
+
+      <div class="typing-indicator" id="typingIndicator">
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+      </div>
+
+      <div class="quick-actions" id="quickActions">
+        <button class="quick-btn" onclick="sendQuickMessage('Cho tôi xem quy trình onboarding')">📋 Quy trình</button>
+        <button class="quick-btn" onclick="sendQuickMessage('Giai đoạn 1 có những gì?')">📌 Phase 1</button>
+        <button class="quick-btn" onclick="sendQuickMessage('Tạo email cho phase 1, merchant Công ty ABC')">📧 Tạo email</button>
+        <button class="quick-btn" onclick="sendQuickMessage('Tạo ticket cho phase 3, merchant Công ty ABC, Zalopay và VQR')">🎫 Tạo ticket</button>
+        <button class="quick-btn" onclick="sendQuickMessage('Kiểm tra tài liệu phase 1, tôi đã nộp Giấy phép kinh doanh')">✅ Kiểm tra tài liệu</button>
+      </div>
+
+      <div class="input-area">
+        <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" style="display: none;">
+        <button class="attach-btn" id="attachBtn" onclick="document.getElementById('fileInput').click()" title="Đính kèm file">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+          </svg>
+        </button>
+        <div class="input-wrapper">
+          <textarea class="chat-input" id="chatInput"
+            placeholder="Nhập tin nhắn... (vd: Tạo email cho phase 1, merchant ABC)"
+            rows="1" onkeydown="handleKeyDown(event)"></textarea>
+          <div id="fileList" class="file-list"></div>
+        </div>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let selectedPhase = null;
+    let selectedFiles = [];
+    let isSending = false;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadPhases();
+      addBotMessage(
+        'Xin chào! 👋<br><br>Tôi là <b>Merchant Onboarding Assistant</b>, sẵn sàng hỗ trợ bạn:<br><br>' +
+        '📋 <b>Xem quy trình</b> - Danh sách các giai đoạn<br>' +
+        '📧 <b>Tạo & gửi email</b> - Email cho PIC từng phase<br>' +
+        '✅ <b>Kiểm tra tài liệu</b> - Đối chiếu tài liệu cần thiết<br>' +
+        '🎫 <b>Tạo ticket</b> - Tạo Jira cho phase 3<br>' +
+        '🔍 <b>Tra cứu MST</b> - Mã số thuế doanh nghiệp<br><br>' +
+        'Bạn cần hỗ trợ gì hôm nay?',
+        true
+      );
+    });
+
+    // Load phases for the sidebar (adapts to backend's {success, data:{phases}})
+    async function loadPhases() {
+      try {
+        const res = await fetch('/api/onboarding/phases');
+        const json = await res.json();
+        const phases = (json.data && json.data.phases) || [];
+        const phaseList = document.getElementById('phaseList');
+        phaseList.innerHTML = phases.map((phase) => `
+          <div class="phase-item phase-${phase.phaseNumber} ${selectedPhase === phase.phaseNumber ? 'active' : ''}"
+               onclick="selectPhase(${phase.phaseNumber})">
+            <div class="phase-number">${phase.phaseNumber}</div>
+            <div class="phase-info">
+              <div class="phase-name">${escapeHtml(phase.phase)}</div>
+              <div class="phase-dept">${escapeHtml(phase.dept)}</div>
+            </div>
+            <div class="phase-status"></div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading phases:', error);
+      }
+    }
+
+    function selectPhase(phaseNumber) {
+      selectedPhase = phaseNumber;
+      loadPhases();
+      sendQuickMessage(`Cho tôi xem chi tiết giai đoạn ${phaseNumber}`);
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+      }
+    }
+
+    const chatInput = document.getElementById('chatInput');
+    chatInput.addEventListener('input', function () {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+
+    const fileInput = document.getElementById('fileInput');
+    fileInput.addEventListener('change', function () {
+      selectedFiles = Array.from(this.files);
+      renderFileList();
+      updateAttachButton();
+    });
+
+    function renderFileList() {
+      const fileList = document.getElementById('fileList');
+      if (selectedFiles.length === 0) { fileList.innerHTML = ''; return; }
+      fileList.innerHTML = selectedFiles.map((file, idx) => `
+        <div class="file-item">
+          <span>📎 ${escapeHtml(file.name)}</span>
+          <span class="remove" onclick="removeFile(${idx})">×</span>
+        </div>
+      `).join('');
+    }
+
+    function removeFile(idx) {
+      selectedFiles.splice(idx, 1);
+      renderFileList();
+      updateAttachButton();
+    }
+
+    function updateAttachButton() {
+      const attachBtn = document.getElementById('attachBtn');
+      attachBtn.classList.toggle('has-files', selectedFiles.length > 0);
+    }
+
+    // Send message -> backend /api/chat (multipart, single optional file)
+    async function sendMessage() {
+      if (isSending) return;
+      const input = document.getElementById('chatInput');
+      const message = input.value.trim();
+      if (!message && selectedFiles.length === 0) return;
+
+      const fileNote = selectedFiles.length > 0 ? ` 📎 ${selectedFiles.length} file` : '';
+      addUserMessage((message || '(đính kèm file)') + fileNote);
+      input.value = '';
+      input.style.height = 'auto';
+
+      isSending = true;
+      document.getElementById('sendBtn').disabled = true;
+      showTyping();
+
+      try {
+        const formData = new FormData();
+        formData.append('message', message || 'Vui lòng xử lý file đính kèm');
+        if (selectedFiles.length > 0) {
+          formData.append('file', selectedFiles[0]); // backend nhận 1 file/lần
+        }
+
+        const res = await fetch('/api/chat', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        hideTyping();
+
+        if (data.success) {
+          addBotMessage(data.data.message, false, data.data.tools_used);
+        } else {
+          addBotMessage('❌ ' + (data.error || 'Có lỗi xảy ra'), true);
+        }
+
+        selectedFiles = [];
+        renderFileList();
+        updateAttachButton();
+        fileInput.value = '';
+      } catch (error) {
+        hideTyping();
+        addBotMessage('❌ Không thể kết nối tới agent. Vui lòng thử lại.', true);
+      } finally {
+        isSending = false;
+        document.getElementById('sendBtn').disabled = false;
+        input.focus();
+      }
+    }
+
+    function sendQuickMessage(message) {
+      document.getElementById('chatInput').value = message;
+      sendMessage();
+    }
+
+    function addUserMessage(text) {
+      const c = document.getElementById('messages');
+      const time = nowTime();
+      c.innerHTML += `
+        <div class="message user">
+          <div class="message-avatar">👤</div>
+          <div class="message-content">
+            <div class="message-text">${escapeHtml(text)}</div>
+            <div class="message-time">${time}</div>
+          </div>
+        </div>`;
+      scrollToBottom();
+    }
+
+    // isHtml=true -> render text as raw HTML (welcome/errors); otherwise render Markdown
+    function addBotMessage(text, isHtml = false, toolsUsed = []) {
+      const c = document.getElementById('messages');
+      const time = nowTime();
+      const body = isHtml ? text : renderMarkdown(text);
+      const toolsHtml = (toolsUsed && toolsUsed.length)
+        ? `<div class="message-tools">🛠 ${toolsUsed.join(', ')}</div>` : '';
+      c.innerHTML += `
+        <div class="message bot">
+          <img src="/logo.png" alt="Zalopay" style="width: 32px; height: 32px; border-radius: 10px; object-fit: contain;">
+          <div class="message-content">
+            <div class="message-text">${body}</div>
+            ${toolsHtml}
+            <div class="message-time">${time}</div>
+          </div>
+        </div>`;
+      scrollToBottom();
+    }
+
+    function showTyping() { document.getElementById('typingIndicator').classList.add('show'); scrollToBottom(); }
+    function hideTyping() { document.getElementById('typingIndicator').classList.remove('show'); }
+    function scrollToBottom() {
+      const c = document.getElementById('messages');
+      c.scrollTop = c.scrollHeight;
+    }
+    function nowTime() {
+      const d = new Date();
+      return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text == null ? '' : String(text);
+      return div.innerHTML;
+    }
+
+    // Lightweight Markdown -> HTML for bot messages
+    function renderMarkdown(text) {
+      const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const inline = (s) => esc(s)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>');
+      const lines = String(text).split(/\r?\n/);
+      let html = '', inList = false;
+      const closeList = () => { if (inList) { html += '</ul>'; inList = false; } };
+      for (const raw of lines) {
+        const line = raw.replace(/\s+$/, '');
+        let m;
+        if ((m = line.match(/^###?\s+(.*)$/))) {
+          closeList();
+          html += '<div style="font-weight:600;margin:8px 0 2px">' + inline(m[1]) + '</div>';
+        } else if ((m = line.match(/^#\s+(.*)$/))) {
+          closeList();
+          html += '<div style="font-weight:700;font-size:15px;margin:8px 0 2px">' + inline(m[1]) + '</div>';
+        } else if ((m = line.match(/^\s*[-*•]\s+(.*)$/))) {
+          if (!inList) { html += '<ul>'; inList = true; }
+          html += '<li>' + inline(m[1]) + '</li>';
+        } else if (line.trim() === '') {
+          closeList();
+          html += '<br>';
+        } else {
+          closeList();
+          html += inline(line) + '<br>';
+        }
+      }
+      closeList();
+      return html;
+    }
+  </script>
+</body>
+</html>

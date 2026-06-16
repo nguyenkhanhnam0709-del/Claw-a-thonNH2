@@ -1,0 +1,109 @@
+{
+  "version": "1.0",
+  "description": "Knowledge base for Merchant Onboarding Agent - examples of user requests and how to respond",
+  "phases": {
+    "1": {
+      "name": "Thẩm định Merchant",
+      "keywords": ["phase 1", "giai đoạn 1", "thẩm định", "giấy phép kinh doanh", "gpkd", "business license"],
+      "example_requests": [
+        "tạo email phase 1",
+        "gửi email cho phase 1",
+        "email thẩm định merchant",
+        "tạo email cho Khoa",
+        "gửi mail cho compliance",
+        "review giấy phép kinh doanh",
+        "phase 1 merchant ABC",
+        "thẩm định Công ty XYZ"
+      ],
+      "actions": [
+        "Gửi email ngay cho hungnqvng@gmail.com (KhoaNVM - PIC Phase 1)",
+        "Subject: [Onboarding] Thẩm định Merchant - {merchantName}",
+        "Yêu cầu: Giấy phép kinh doanh"
+      ]
+    },
+    "2": {
+      "name": "Review Hợp đồng",
+      "keywords": ["phase 2", "giai đoạn 2", "hợp đồng", "contract", "legal", "luật"],
+      "example_requests": [
+        "tạo email phase 2",
+        "gửi email hợp đồng",
+        "email legal review",
+        "gửi mail cho TuPNC",
+        "review hợp đồng merchant",
+        "phase 2 Công ty ABC"
+      ],
+      "actions": [
+        "Gửi email ngay cho vnglegal@gmail.com (TuPNC - PIC Phase 2)",
+        "Subject: [Onboarding] Review Hợp đồng - {merchantName}",
+        "Yêu cầu: Draft hợp đồng"
+      ]
+    },
+    "3": {
+      "name": "Tích hợp kỹ thuật",
+      "keywords": ["phase 3", "giai đoạn 3", "tích hợp", "kỹ thuật", "tech", "ticket", "jira", "app id"],
+      "example_requests": [
+        "tạo ticket phase 3",
+        "tạo jira ticket",
+        "tích hợp thanh toán",
+        "tạo app id",
+        "tech integration",
+        "phase 3 merchant ABC"
+      ],
+      "actions": [
+        "Tạo Jira ticket cho NhanNĐT (hieulv3@vng.com.vn - PIC Phase 3)",
+        "Title: [Onboarding] Tích hợp thanh toán - {merchantName}",
+        "Nội dung: Zalopay, VQR, Credit Card"
+      ]
+    },
+    "4": {
+      "name": "Tạo FA Code",
+      "keywords": ["phase 4", "giai đoạn 4", "fa code", "mã số thuế", "mst", "accounting", "kế toán", "bank"],
+      "example_requests": [
+        "tạo email phase 4",
+        "gửi email fa code",
+        "tạo mã thanh toán",
+        "fa code merchant",
+        "mã số thuế",
+        "accounting",
+        "phase 4 Công ty ABC"
+      ],
+      "actions": [
+        "Gửi email ngay cho quochung.ng4801.work@gmail.com (ChienNM - PIC Phase 4)",
+        "Subject: [Onboarding] Tạo FA Code - {merchantName}",
+        "Yêu cầu: Mã số thuế, tài khoản ngân hàng"
+      ]
+    }
+  },
+  "general_commands": {
+    "send_email": {
+      "keywords": ["gửi email", "send email", "tạo email", "create email", "mail", "gửi mail"],
+      "action": "GỬI EMAIL NGAY - Không cần xác nhận"
+    },
+    "continue": {
+      "keywords": ["tiếp tục", "continue", "ok", "đồng ý", "yes", "vâng", "được"],
+      "action": "Thực hiện ngay tác vụ trước đó - Không hỏi lại"
+    },
+    "upload_file": {
+      "keywords": ["upload", "file", "tải lên", "đính kèm", "attach"],
+      "action": "Validate file và lưu vào server"
+    },
+    "tra_cuu_mst": {
+      "keywords": ["tra cứu mst", "lookup tax", "mã số thuế", "tra thuế"],
+      "action": "Gọi tool lookup_tax_id"
+    },
+    "quy_trinh": {
+      "keywords": ["quy trình", "process", "các bước", "steps", "flow"],
+      "action": "Liệt kê 4 phases: 1.Thẩm định, 2.Hợp đồng, 3.Tích hợp, 4.FA Code"
+    },
+    "validate": {
+      "keywords": ["kiểm tra", "validate", "check", "xác nhận"],
+      "action": "Gọi tool validate_documents"
+    }
+  },
+  "response_style": {
+    "short": "Trả lời NGẮN GỌN - max 2-3 câu",
+    "no_confirm": "KHÔNG cần xác nhận - Thực hiện ngay",
+    "no_questions": "KHÔNG hỏi nhiều câu hỏi",
+    "remember_context": "Nhớ các bước đã thực hiện trong conversation"
+  }
+}
