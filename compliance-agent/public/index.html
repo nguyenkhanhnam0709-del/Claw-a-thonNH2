@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zalopay Compliance Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Variables - Zalopay Brand */
+    :root {
+      /* Primary Colors */
+      --zp-blue: #0033C9;
+      --zp-green: #00CF6A;
+
+      /* Secondary Colors */
+      --zp-light-blue: #00B4FF;
+      --zp-neon-green: #A1FF00;
+      --zp-purple: #6F0CDF;
+      --zp-yellow: #FFD729;
+      --zp-orange: #FF8A00;
+
+      /* Neutrals */
+      --zp-bg: #F5F7FA;
+      --zp-white: #FFFFFF;
+      --zp-text: #1A1A1A;
+      --zp-text-muted: #6B7280;
+      --zp-border: #E5E7EB;
+
+      /* Font */
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background: var(--zp-bg);
+      color: var(--zp-text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      background: var(--zp-white);
+      border-bottom: 1px solid var(--zp-border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      height: 32px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo img {
+      height: 100%;
+    }
+
+    .logo-text {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--zp-blue) 0%, var(--zp-green) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--zp-text-muted);
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-badge {
+      background: var(--zp-blue);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Main Container */
+    .container {
+      flex: 1;
+      display: flex;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 24px;
+      gap: 24px;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 280px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-card {
+      background: var(--zp-white);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .sidebar-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--zp-text);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-title::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: var(--zp-blue);
+      border-radius: 2px;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: var(--zp-bg);
+      padding: 14px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--zp-blue);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--zp-text-muted);
+      margin-top: 2px;
+    }
+
+    .stat-card.pending .stat-number {
+      color: var(--zp-orange);
+    }
+
+    .stat-card.approved .stat-number {
+      color: var(--zp-green);
+    }
+
+    .stat-card.rejected .stat-number {
+      color: #EF4444;
+    }
+
+    /* Request List */
+    .request-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .request-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+      background: var(--zp-bg);
+    }
+
+    .request-item:hover {
+      border-color: var(--zp-blue);
+      transform: translateX(4px);
+    }
+
+    .request-item.active {
+      background: rgba(0, 51, 201, 0.08);
+      border-color: var(--zp-blue);
+    }
+
+    .request-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      background: var(--zp-orange);
+      color: white;
+    }
+
+    .request-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .request-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--zp-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .request-meta {
+      font-size: 12px;
+      color: var(--zp-text-muted);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 20px;
+      color: var(--zp-text-muted);
+      font-size: 13px;
+    }
+
+    /* Chat Area */
+    .chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--zp-white);
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+
+    .chat-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--zp-border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .chat-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--zp-blue) 0%, var(--zp-green) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .chat-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .chat-subtitle {
+      font-size: 13px;
+      color: var(--zp-text-muted);
+    }
+
+    /* Messages */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .message {
+      display: flex;
+      gap: 12px;
+      max-width: 85%;
+    }
+
+    .message.user {
+      flex-direction: row-reverse;
+      align-self: flex-end;
+    }
+
+    .message-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .message.bot .message-avatar {
+      background: linear-gradient(135deg, var(--zp-blue) 0%, var(--zp-green) 100%);
+      color: white;
+    }
+
+    .message.user .message-avatar {
+      background: var(--zp-bg);
+      color: var(--zp-text-muted);
+    }
+
+    .message-content {
+      background: var(--zp-bg);
+      padding: 12px 16px;
+      border-radius: 12px;
+      border-top-left-radius: 4px;
+    }
+
+    .message.user .message-content {
+      background: var(--zp-blue);
+      color: white;
+      border-top-left-radius: 12px;
+      border-top-right-radius: 4px;
+    }
+
+    .message-text {
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .message-text b, .message-text strong {
+      font-weight: 600;
+    }
+
+    .message-time {
+      font-size: 11px;
+      color: var(--zp-text-muted);
+      margin-top: 4px;
+    }
+
+    .message.user .message-time {
+      color: rgba(255,255,255,0.7);
+      text-align: right;
+    }
+
+    /* Action Buttons in Messages */
+    .message-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .action-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--font-family);
+    }
+
+    .action-btn.approve {
+      background: var(--zp-green);
+      color: white;
+    }
+
+    .action-btn.approve:hover {
+      background: #00A856;
+    }
+
+    .action-btn.reject {
+      background: #EF4444;
+      color: white;
+    }
+
+    .action-btn.reject:hover {
+      background: #DC2626;
+    }
+
+    .action-btn.info {
+      background: var(--zp-orange);
+      color: white;
+    }
+
+    .action-btn.info:hover {
+      background: #E67800;
+    }
+
+    /* Input Area */
+    .input-area {
+      padding: 16px 20px;
+      border-top: 1px solid var(--zp-border);
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    .chat-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid var(--zp-border);
+      border-radius: 12px;
+      font-size: 14px;
+      font-family: var(--font-family);
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .chat-input:focus {
+      border-color: var(--zp-blue);
+    }
+
+    .chat-input::placeholder {
+      color: var(--zp-text-muted);
+    }
+
+    .send-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      border: none;
+      background: var(--zp-blue);
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .send-btn:hover {
+      background: #002A99;
+      transform: scale(1.02);
+    }
+
+    .send-btn:disabled {
+      background: var(--zp-border);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .send-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+      display: flex;
+      gap: 8px;
+      padding: 0 20px 16px;
+      flex-wrap: wrap;
+    }
+
+    .quick-btn {
+      padding: 8px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--zp-border);
+      background: var(--zp-white);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--zp-text);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--font-family);
+    }
+
+    .quick-btn:hover {
+      border-color: var(--zp-blue);
+      color: var(--zp-blue);
+      background: rgba(0, 51, 201, 0.04);
+    }
+
+    /* Typing Indicator */
+    .typing-indicator {
+      display: none;
+      padding: 12px 16px;
+      background: var(--zp-bg);
+      border-radius: 12px;
+      border-top-left-radius: 4px;
+      width: fit-content;
+    }
+
+    .typing-indicator.show {
+      display: flex;
+      gap: 4px;
+    }
+
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--zp-text-muted);
+      animation: typing 1.4s infinite;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes typing {
+      0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.4;
+      }
+      30% {
+        transform: translateY(-4px);
+        opacity: 1;
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+        padding: 16px;
+      }
+
+      .sidebar {
+        width: 100%;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .request-list {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 8px;
+      }
+
+      .request-item {
+        min-width: 200px;
+        flex-shrink: 0;
+      }
+
+      .message {
+        max-width: 95%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <span class="logo-text">Zalopay</span>
+    </div>
+    <span class="header-title">
+      Compliance Agent
+      <span class="header-badge">POV: Compliance</span>
+    </span>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-card">
+        <h3 class="sidebar-title">Tổng quan</h3>
+
+        <div class="stats-grid">
+          <div class="stat-card pending">
+            <div class="stat-number" id="pendingCount">0</div>
+            <div class="stat-label">Chờ xử lý</div>
+          </div>
+          <div class="stat-card approved">
+            <div class="stat-number" id="approvedCount">0</div>
+            <div class="stat-label">Đã duyệt</div>
+          </div>
+          <div class="stat-card rejected">
+            <div class="stat-number" id="rejectedCount">0</div>
+            <div class="stat-label">Đã từ chối</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="totalCount">0</div>
+            <div class="stat-label">Tổng cộng</div>
+          </div>
+        </div>
+
+        <h3 class="sidebar-title">Request chờ xử lý</h3>
+        <div class="request-list" id="requestList">
+          <div class="empty-state">Không có request nào</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Chat Area -->
+    <div class="chat-area">
+      <div class="chat-header">
+        <div class="chat-avatar">CP</div>
+        <div>
+          <div class="chat-title">Compliance Assistant</div>
+          <div class="chat-subtitle">Nhận request từ Biz • Approve/Reject</div>
+        </div>
+      </div>
+
+      <div class="messages" id="messages">
+        <!-- Messages will be loaded here -->
+      </div>
+
+      <div class="typing-indicator" id="typingIndicator">
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+      </div>
+
+      <div class="quick-actions" id="quickActions">
+        <button class="quick-btn" onclick="sendQuickMessage('Quy trình approval của Compliance là gì?')">
+          📋 Quy trình
+        </button>
+        <button class="quick-btn" onclick="sendQuickMessage('Xem các request đang chờ')">
+          📋 Request chờ
+        </button>
+        <button class="quick-btn" onclick="sendQuickMessage('Cho tôi xem tiêu chí review phase 1')">
+          🔍 Tiêu chí review
+        </button>
+      </div>
+
+      <div class="input-area">
+        <div class="input-wrapper">
+          <textarea
+            class="chat-input"
+            id="chatInput"
+            placeholder="Nhập tin nhắn... (vd: Approve merchant ABC, Reject merchant XYZ vì...)"
+            rows="1"
+            onkeydown="handleKeyDown(event)"
+          ></textarea>
+        </div>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // State
+    let messages = [];
+    let pendingRequests = [];
+    let allDecisions = [];
+    let selectedMerchant = null;
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadData();
+      addBotMessage('Xin chào! 👋<br><br>Tôi là <b>Compliance Assistant</b>, sẵn sàng hỗ trợ bạn trong việc:<br><br>' +
+        '✅ <b>Approve</b> - Duyệt merchant đạt tiêu chí<br>' +
+        '❌ <b>Reject</b> - Từ chối kèm lý do<br>' +
+        '⏳ <b>Yêu cầu bổ sung</b> - Khi cần thêm thông tin<br><br>' +
+        'Bạn cần hỗ trợ gì hôm nay?');
+    });
+
+    // Load data from API
+    async function loadData() {
+      try {
+        // Load pending requests
+        const pendingRes = await fetch('/api/pending');
+        pendingRequests = await pendingRes.json();
+
+        // Load all decisions
+        const decisionsRes = await fetch('/api/decisions');
+        allDecisions = await decisionsRes.json();
+
+        updateStats();
+        renderPendingRequests();
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
+    }
+
+    // Update stats
+    function updateStats() {
+      const pending = pendingRequests.length;
+      const approved = allDecisions.filter(d => d.decision === 'approve').length;
+      const rejected = allDecisions.filter(d => d.decision === 'reject').length;
+      const total = allDecisions.length;
+
+      document.getElementById('pendingCount').textContent = pending;
+      document.getElementById('approvedCount').textContent = approved;
+      document.getElementById('rejectedCount').textContent = rejected;
+      document.getElementById('totalCount').textContent = total;
+    }
+
+    // Render pending requests
+    function renderPendingRequests() {
+      const list = document.getElementById('requestList');
+
+      if (pendingRequests.length === 0) {
+        list.innerHTML = '<div class="empty-state">Không có request nào</div>';
+        return;
+      }
+
+      list.innerHTML = pendingRequests.map((req, idx) => `
+        <div class="request-item ${selectedMerchant === req.merchantName ? 'active' : ''}"
+             onclick="selectMerchant('${req.merchantName}', ${req.phaseNumber})">
+          <div class="request-icon">⏳</div>
+          <div class="request-info">
+            <div class="request-name">${req.merchantName}</div>
+            <div class="request-meta">Phase ${req.phaseNumber} • ${req.requestFrom || 'Biz'}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Select merchant
+    function selectMerchant(merchantName, phaseNumber) {
+      selectedMerchant = merchantName;
+      renderPendingRequests();
+      sendQuickMessage(`Review hồ sơ ${merchantName} phase ${phaseNumber}`);
+    }
+
+    // Handle key down
+    function handleKeyDown(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+      }
+    }
+
+    // Auto-resize textarea
+    const chatInput = document.getElementById('chatInput');
+    chatInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+
+    // Send message
+    async function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const message = input.value.trim();
+      if (!message) return;
+
+      // Show typing indicator
+      showTyping();
+
+      try {
+        addUserMessage(message);
+        input.value = '';
+        input.style.height = 'auto';
+
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message })
+        });
+
+        const data = await response.json();
+
+        hideTyping();
+
+        if (data.response) {
+          addBotMessage(data.response, data.format);
+
+          // Reload data after action
+          await loadData();
+        } else {
+          addBotMessage('❌ ' + (data.error || 'Có lỗi xảy ra'), 'text');
+        }
+      } catch (error) {
+        hideTyping();
+        addBotMessage('❌ Xin lỗi, có lỗi xảy ra. Vui lòng thử lại.');
+      }
+    }
+
+    // Send quick message
+    function sendQuickMessage(message) {
+      document.getElementById('chatInput').value = message;
+      sendMessage();
+    }
+
+    // Add user message
+    function addUserMessage(text) {
+      const messagesContainer = document.getElementById('messages');
+      const time = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+      messagesContainer.innerHTML += `
+        <div class="message user">
+          <div class="message-avatar">👤</div>
+          <div class="message-content">
+            <div class="message-text">${escapeHtml(text)}</div>
+            <div class="message-time">${time}</div>
+          </div>
+        </div>
+      `;
+
+      scrollToBottom();
+    }
+
+    // Add bot message
+    function addBotMessage(text, format = 'html') {
+      const messagesContainer = document.getElementById('messages');
+      const time = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+      messagesContainer.innerHTML += `
+        <div class="message bot">
+          <div class="message-avatar">CP</div>
+          <div class="message-content">
+            <div class="message-text">${format === 'html' ? text : escapeHtml(text)}</div>
+            <div class="message-time">${time}</div>
+          </div>
+        </div>
+      `;
+
+      scrollToBottom();
+    }
+
+    // Show typing indicator
+    function showTyping() {
+      document.getElementById('typingIndicator').classList.add('show');
+      scrollToBottom();
+    }
+
+    // Hide typing indicator
+    function hideTyping() {
+      document.getElementById('typingIndicator').classList.remove('show');
+    }
+
+    // Scroll to bottom
+    function scrollToBottom() {
+      const messagesContainer = document.getElementById('messages');
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Escape HTML
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
