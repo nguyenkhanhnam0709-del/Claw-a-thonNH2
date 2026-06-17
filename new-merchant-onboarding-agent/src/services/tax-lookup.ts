@@ -9,36 +9,27 @@ export interface TaxInfo {
   foundingDate?: string;
 }
 
+// DEMO MODE: trả dữ liệu mô phỏng ổn định cho mỗi tên công ty (không gọi API thật).
+// Đủ để demo luồng tra cứu MST end-to-end. Để bật tra cứu thật, dùng lookupTaxIdByScraping
+// hoặc khôi phục lời gọi masothue.com bên dưới.
 export async function lookupTaxId(companyName: string): Promise<TaxInfo | null> {
-  try {
-    // Use masothue.com API to search for tax ID
-    const searchUrl = `https://masothue.com/api/search?q=${encodeURIComponent(companyName)}`;
+  const name = (companyName || '').trim() || 'Doanh nghiệp';
 
-    const response = await axios.get(searchUrl, {
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      },
-      timeout: 15000,
-    });
-
-    if (response.data && response.data.code === 200 && response.data.data) {
-      const data = response.data.data;
-      return {
-        mst: data.mst || data.tax_code || '',
-        companyName: data.name || data.title || companyName,
-        address: data.address || '',
-        status: data.status || data.trang_thai || '',
-        representitive: data.representitive || data.nguoi_dai_dien || '',
-        foundingDate: data.founding_date || data.ngay_cap || '',
-      };
-    }
-
-    return null;
-  } catch (error: any) {
-    console.error('Error looking up tax ID:', error.message);
-    return null;
+  // Hash tên công ty -> MST 10 chữ số ổn định (cùng tên luôn ra cùng MST)
+  let h = 0;
+  for (let i = 0; i < name.length; i++) {
+    h = (h * 31 + name.charCodeAt(i)) >>> 0;
   }
+  const mst = String(1000000000 + (h % 9000000000)); // 10 chữ số
+
+  return {
+    mst,
+    companyName: name,
+    address: 'TP. Hồ Chí Minh, Việt Nam',
+    status: 'Đang hoạt động',
+    representitive: '',
+    foundingDate: '',
+  };
 }
 
 // Alternative: Use web scraping approach

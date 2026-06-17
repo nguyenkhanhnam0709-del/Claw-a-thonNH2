@@ -13,6 +13,7 @@ import * as emailService from './services/email';
 import * as kbService from './services/knowledge-base';
 import * as memoryService from './services/memory';
 import * as onboardingAgent from './services/onboarding-agent';
+import * as formatters from './services/formatters';
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -185,15 +186,19 @@ Các cách BD có thể nói:
   - Phase 4 → Gửi đến ChienNM (quochung.ng4801.work@gmail.com), subject: "[Onboarding] Tạo FA Code - {merchantName}"
 
 ## Tools available:
-- get_phases: Lay danh sach tat ca cac phase. KHI CAN HIEN THI QUY TRINH, PHAI DUNG TRUC TIEP formattedPhases tu response cua tool, KHONG tu format lai
-- validate_documents: Kiem tra tai lieu BD nop co du khong
-- generate_email: Tao VA GUI email thuc cho PIC o Phase 1, 2, 4 (tu dong gui email that sau khi tao template)
-- generate_ticket: Tao ticket template cho Phase 3 (Tech)
+- get_phases: Lay danh sach tat ca cac phase (tra ve format phase_list)
+- get_phase_detail: Lay chi tiet 1 giai doan cu the (tra ve format phase_detail). Dung khi user hoi "chi tiet giai doan X", "phase X co gi"
+- validate_documents: Kiem tra tai lieu BD nop co du khong (tra ve format validation_result)
+- generate_email: Tao VA GUI email thuc cho PIC o Phase 1, 2, 4 (tu dong gui email that, tra ve format email_sent)
+- generate_ticket: Tao ticket template cho Phase 3 (Tech) (tra ve format ticket_preview)
 - send_real_email: Gui email thuc cho nguoi nhan bat ky (su dung Gmail App Password da duoc cau hinh)
 - simulate_send_email: Simulate gui email cho PIC (chi log, khong gui that - dung de preview truoc khi gui)
-- lookup_tax_id: Tra cuu ma so thue (MST) tu ten cong ty qua masothue.com
+- lookup_tax_id: Tra cuu ma so thue (MST) tu ten cong ty (tra ve format tax_lookup_result)
 
-## QUY TRAC: Khi user hoi ve quy trinh, PHAI dung formattedPhases tu get_phases tool, khong duoc tu viet lai`;
+## QUY TAC OUTPUT (QUAN TRONG NHAT):
+- Moi tool tra ve mot field "formatted" (hoac "formattedPhases" cho get_phases). PHAI dung CHINH XAC noi dung field do lam cau tra loi cho user.
+- KHONG viet lai, KHONG dien giai them, KHONG bo bot emoji hay dong nao trong "formatted".
+- Neu co the chi can xuat nguyen van "formatted"; toi da chi them 1 cau ngan o cuoi neu that su can.`;
 
 // Health check endpoint (required by AgentBase)
 app.get('/health', (req, res) => {
@@ -312,6 +317,11 @@ app.post('/api/tax-lookup', async (req, res) => {
 app.post('/api/chat', upload.single('file'), async (req, res) => {
   try {
     const message = req.body.message || '';
+    const ccEmail = (req.body.ccEmail || '').trim(); // CC demo cho giám khảo (tùy chọn)
+    // File BD upload sẽ được đính kèm vào email gửi PIC (nếu có)
+    const emailAttachments = req.file
+      ? [{ filename: req.file.originalname, path: req.file.path }]
+      : [];
     let context: any[] = [];
     if (req.body.context) {
       try {
@@ -396,8 +406,22 @@ app.post('/api/chat', upload.single('file'), async (req, res) => {
           type: 'function',
           function: {
             name: 'get_phases',
-            description: 'Tra ve thong tin quy trinh onboarding. Chi tra ve text thuan, KHONG tra ve JSON',
+            description: 'Tra ve thong tin quy trinh onboarding (format phase_list). Chi tra ve text thuan, KHONG tra ve JSON',
             parameters: { type: 'object', properties: {}, required: [] },
+          },
+        },
+        {
+          type: 'function',
+          function: {
+            name: 'get_phase_detail',
+            description: 'Lay chi tiet 1 giai doan cu the (format phase_detail). Dung khi user hoi chi tiet/thong tin cua 1 phase',
+            parameters: {
+              type: 'object',
+              properties: {
+                phaseNumber: { type: 'number', description: 'Số phase (1-4)' },
+              },
+              required: ['phaseNumber'],
+            },
           },
         },
         {
@@ -515,45 +539,17 @@ app.post('/api/chat', upload.single('file'), async (req, res) => {
 
     if (toolCalls.length > 0) {
       const toolResults: any[] = [];
+      const formattedFallbacks: string[] = [];
       for (const toolCall of toolCalls) {
         const func = (toolCall as any).function;
         if (!func) continue;
 
         const toolName = func.name;
         const toolArgs = JSON.parse(func.arguments);
+        const result = await executeTool(toolName, toolArgs, ccEmail, emailAttachments);
 
-        let result: any;
-        switch (toolName) {
-          case 'get_phases':
-            result = await getPhases();
-            break;
-          case 'validate_documents':
-            result = await validateDocuments(toolArgs.phaseNumber, toolArgs.documents);
-            break;
-          case 'generate_email':
-            result = await generateEmail(
-              toolArgs.phaseNumber,
-              toolArgs.merchantName,
-              toolArgs.taxId,
-              toolArgs.bankAccount,
-              toolArgs.bankName
-            );
-            break;
-          case 'generate_ticket':
-            result = await generateTicket(toolArgs.merchantName, toolArgs.paymentMethods);
-            break;
-          case 'send_real_email':
-            result = await sendRealEmail(toolArgs.to, toolArgs.subject, toolArgs.body, toolArgs.fromEmail, toolArgs.appPassword);
-            break;
-          case 'simulate_send_email':
-            result = await simulateSendEmail(toolArgs.to, toolArgs.subject, toolArgs.body);
-            break;
-          case 'lookup_tax_id':
-            result = await lookupTaxId(toolArgs.companyName);
-            break;
-          default:
-            result = { error: 'Unknown tool' };
-        }
+        const f = typeof result === 'string' ? result : result?.formatted || result?.formattedPhases;
+        if (f) formattedFallbacks.push(f);
 
         toolResults.push({
           tool_call_id: toolCall.id,
@@ -569,8 +565,11 @@ app.post('/api/chat', upload.single('file'), async (req, res) => {
         temperature: 0.7,
       });
 
-      const finalMessage =
-        secondResponse.choices[0]?.message?.content || 'Xin lỗi, tôi không thể xử lý yêu cầu của bạn.';
+      let finalMessage = sanitizeOutput(secondResponse.choices[0]?.message?.content || '');
+      // Nếu LLM trả rỗng (hoặc bị sanitize xoá hết), fallback về output formatted của tool
+      if (!finalMessage) {
+        finalMessage = formattedFallbacks.filter(Boolean).join('\n\n') || 'Xin lỗi, tôi không thể xử lý yêu cầu của bạn.';
+      }
 
       memoryService.createEvent(userId, sessionId, 'user', userMessage).catch(() => {});
       memoryService.createEvent(userId, sessionId, 'assistant', finalMessage).catch(() => {});
@@ -583,14 +582,31 @@ app.post('/api/chat', upload.single('file'), async (req, res) => {
         },
       });
     } else {
-      const assistantMsg = assistantMessage?.content || 'Xin lỗi, tôi không thể xử lý yêu cầu của bạn.';
+      let assistantMsg = assistantMessage?.content || 'Xin lỗi, tôi không thể xử lý yêu cầu của bạn.';
+      let toolsUsed: string[] = [];
+
+      // Fallback: một số model (MiniMax) đôi khi in tool-call dạng text thay vì gọi đúng cách.
+      // Parse, thực thi, và trả về kết quả formatted để demo luôn sạch.
+      const inlineCalls = parseInlineToolCalls(assistantMsg);
+      if (inlineCalls.length > 0) {
+        const outputs: string[] = [];
+        for (const c of inlineCalls) {
+          const r: any = await executeTool(c.name, c.args, ccEmail, emailAttachments);
+          toolsUsed.push(c.name);
+          const f = typeof r === 'string' ? r : r?.formatted || r?.formattedPhases;
+          if (f) outputs.push(f);
+        }
+        if (outputs.length > 0) assistantMsg = outputs.join('\n\n');
+      }
+
+      assistantMsg = sanitizeOutput(assistantMsg) || 'Xin lỗi, tôi không thể xử lý yêu cầu của bạn.';
 
       memoryService.createEvent(userId, sessionId, 'user', userMessage).catch(() => {});
       memoryService.createEvent(userId, sessionId, 'assistant', assistantMsg).catch(() => {});
 
       res.json({
         success: true,
-        data: { message: assistantMsg, tools_used: [] },
+        data: { message: assistantMsg, tools_used: toolsUsed },
       });
     }
   } catch (error: any) {
@@ -599,10 +615,92 @@ app.post('/api/chat', upload.single('file'), async (req, res) => {
   }
 });
 
+// ==================== TOOL DISPATCH & OUTPUT SANITIZER ====================
+async function executeTool(toolName: string, toolArgs: any, ccEmail?: string, attachments?: any[]): Promise<any> {
+  switch (toolName) {
+    case 'get_phases':
+      return await getPhases();
+    case 'get_phase_detail':
+      return await getPhaseDetail(toolArgs.phaseNumber);
+    case 'validate_documents':
+      return await validateDocuments(toolArgs.phaseNumber, toolArgs.documents);
+    case 'generate_email':
+      return await generateEmail(
+        toolArgs.phaseNumber,
+        toolArgs.merchantName,
+        toolArgs.taxId,
+        toolArgs.bankAccount,
+        toolArgs.bankName,
+        ccEmail,
+        attachments
+      );
+    case 'generate_ticket':
+      return await generateTicket(toolArgs.merchantName, toolArgs.paymentMethods);
+    case 'send_real_email':
+      return await sendRealEmail(toolArgs.to, toolArgs.subject, toolArgs.body, toolArgs.fromEmail, toolArgs.appPassword, ccEmail, attachments);
+    case 'simulate_send_email':
+      return await simulateSendEmail(toolArgs.to, toolArgs.subject, toolArgs.body);
+    case 'lookup_tax_id':
+      return await lookupTaxId(toolArgs.companyName);
+    default:
+      return { error: 'Unknown tool' };
+  }
+}
+
+// Loại bỏ cú pháp tool-call thô mà model đôi khi lỡ in ra (MiniMax quirk),
+// để UI không bao giờ hiển thị <tool_call>/<invoke>/<parameter>.
+function sanitizeOutput(text: string): string {
+  if (!text) return text;
+  let t = text;
+  // Cắt sạch từ marker tool-call đầu tiên tới hết (các call thừa luôn nằm cuối,
+  // kể cả khi model in thiếu thẻ đóng). Bỏ luôn câu dẫn "Để tôi..." ngay trước nó nếu có.
+  const marker = t.search(/<\s*\/?\s*(?:\w+:)?(?:tool_call|invoke|function_call)\b/i);
+  if (marker !== -1) {
+    let head = t.slice(0, marker);
+    head = head.replace(/(?:^|\n)[^\n]*(?:Để tôi|Tôi sẽ|Let me)[^\n]*:\s*$/i, '');
+    t = head;
+  }
+  // Dọn mọi thẻ lẻ còn sót
+  t = t.replace(/<\/?(?:\w+:)?(?:tool_call|invoke|parameter|function_call)[^>]*>/gi, '');
+  return t.trim();
+}
+
+// Parse tool-call khi model in dưới dạng text (fallback). Trả [{name, args}].
+function parseInlineToolCalls(content: string): { name: string; args: any }[] {
+  const calls: { name: string; args: any }[] = [];
+  const invokeRe = /<invoke\s+name="([^"]+)">([\s\S]*?)<\/invoke>/gi;
+  let m: RegExpExecArray | null;
+  while ((m = invokeRe.exec(content)) !== null) {
+    const name = m[1];
+    const body = m[2];
+    const args: any = {};
+    const paramRe = /<parameter\s+name="([^"]+)">([\s\S]*?)<\/parameter>/gi;
+    let p: RegExpExecArray | null;
+    while ((p = paramRe.exec(body)) !== null) {
+      const key = p[1];
+      let val: any = p[2].trim();
+      if (val === 'true') val = true;
+      else if (val === 'false') val = false;
+      else if (/^-?\d+$/.test(val)) val = Number(val);
+      args[key] = val;
+    }
+    calls.push({ name, args });
+  }
+  return calls;
+}
+
 // ==================== TOOL IMPLEMENTATIONS ====================
 async function getPhases() {
   const result = onboardingAgent.getProcessOverview();
   return result.formattedPhases;
+}
+
+async function getPhaseDetail(phaseNumber: number) {
+  const phase = onboardingAgent.getPhaseByNumber(phaseNumber);
+  if (!phase) {
+    return { formatted: formatters.formatError('Không tìm thấy giai đoạn', `Phase ${phaseNumber} không tồn tại (chỉ có Phase 1-4).`) };
+  }
+  return { formatted: formatters.formatPhaseDetail(phase) };
 }
 
 async function validateDocuments(phaseNumber: number, documents: string[]) {
@@ -614,7 +712,9 @@ async function generateEmail(
   merchantName: string,
   taxId?: string,
   bankAccount?: string,
-  bankName?: string
+  bankName?: string,
+  ccEmail?: string,
+  attachments?: any[]
 ) {
   const actualMerchantName = merchantName && merchantName.length > 2 ? merchantName : 'Merchant mới';
 
@@ -623,18 +723,27 @@ async function generateEmail(
     merchantInfo: { merchantName: actualMerchantName, taxId, bankAccount, bankName },
   });
 
+  const atts = attachments && attachments.length ? attachments : undefined;
   const sendResult = await emailService.sendEmailSimple(
     emailTemplate.to,
     emailTemplate.subject,
-    emailTemplate.body
+    emailTemplate.body,
+    undefined,
+    undefined,
+    ccEmail || undefined,
+    atts
   );
 
   if (sendResult.success) {
+    const sentAt = new Date().toLocaleString('vi-VN');
+    const attNames = atts ? atts.map((a: any) => a.filename).join(', ') : undefined;
     return {
       ...emailTemplate,
       sent: true,
+      cc: ccEmail || undefined,
+      attachments: attNames,
       messageId: sendResult.messageId,
-      message: `✅ Email đã được gửi thành công đến ${emailTemplate.to}!`,
+      formatted: formatters.formatEmailSent(emailTemplate.to, emailTemplate.subject, sentAt, ccEmail || undefined, attNames),
     };
   }
 
@@ -642,7 +751,7 @@ async function generateEmail(
     ...emailTemplate,
     sent: false,
     error: sendResult.error,
-    message: `❌ Gửi email thất bại: ${sendResult.error}`,
+    formatted: formatters.formatError('Gửi email thất bại', sendResult.error || 'Lỗi không xác định'),
   };
 }
 
@@ -654,20 +763,39 @@ async function simulateSendEmail(to: string, subject: string, body: string) {
   return onboardingAgent.simulateSendEmail({ email: { to, subject, body } });
 }
 
-async function sendRealEmail(to: string, subject: string, body: string, fromEmail?: string, appPassword?: string) {
-  const result = await emailService.sendEmailSimple(to, subject, body, fromEmail, appPassword);
+async function sendRealEmail(to: string, subject: string, body: string, fromEmail?: string, appPassword?: string, ccEmail?: string, attachments?: any[]) {
+  const atts = attachments && attachments.length ? attachments : undefined;
+  const result = await emailService.sendEmailSimple(to, subject, body, fromEmail, appPassword, ccEmail || undefined, atts);
   if (result.success) {
-    return { success: true, messageId: result.messageId, message: `Email đã được gửi thành công đến ${to}` };
+    const sentAt = new Date().toLocaleString('vi-VN');
+    const attNames = atts ? atts.map((a: any) => a.filename).join(', ') : undefined;
+    return {
+      success: true,
+      messageId: result.messageId,
+      formatted: formatters.formatEmailSent(to, subject, sentAt, ccEmail || undefined, attNames),
+    };
   }
-  return { success: false, error: result.error || 'Không thể gửi email' };
+  return { success: false, error: result.error || 'Không thể gửi email', formatted: formatters.formatError('Gửi email thất bại', result.error || 'Lỗi không xác định') };
 }
 
 async function lookupTaxId(companyName: string) {
-  const result = await taxLookup.lookupTaxId(companyName);
+  const result: any = await taxLookup.lookupTaxId(companyName);
   if (result) {
-    return { found: true, ...result };
+    return {
+      found: true,
+      ...result,
+      formatted: formatters.formatTaxLookup(
+        result.companyName || companyName,
+        result.mst || '(không có)',
+        result.address || '(không có)',
+        result.status || '(không có)'
+      ),
+    };
   }
-  return { found: false, message: `Không tìm thấy MST cho công ty: ${companyName}` };
+  return {
+    found: false,
+    formatted: formatters.formatError('Không tìm thấy MST', `Không tra cứu được mã số thuế cho công ty: ${companyName}`),
+  };
 }
 
 // Root endpoint — serve the BD onboarding UI

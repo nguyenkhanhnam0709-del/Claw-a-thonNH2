@@ -474,7 +474,9 @@ export async function sendEmailSimple(
   subject: string,
   body: string,
   fromEmail?: string,
-  appPassword?: string
+  appPassword?: string,
+  cc?: string,
+  attachments?: Array<{ filename: string; path?: string; content?: Buffer; contentType?: string }>
 ): Promise<{
   success: boolean;
   messageId?: string;
@@ -498,6 +500,10 @@ export async function sendEmailSimple(
           user: email,
           pass: password,
         },
+        // Fail nhanh khi mạng tới SMTP chập chờn (tránh treo UI)
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
       } as any);
     } else {
       // Use OAuth2
@@ -521,12 +527,43 @@ export async function sendEmailSimple(
       } as any);
     }
 
-    const result = await transporter.sendMail({
-      from: email ? `"Merchant Onboarding" <${email}>` : 'me',
+    const mailOptions = {
+      from: email ? `"Merchant Onboarding Team - ZaloPay" <${email}>` : 'me',
       to,
+      ...(cc ? { cc } : {}),
+      ...(attachments && attachments.length ? { attachments } : {}),
       subject,
       html: body,
-    } as any);
+    } as any;
+
+    // Retry tối đa 2 lần khi gặp lỗi kết nối tạm thời (ECONNRESET, timeout...)
+    let result: any;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        result = await transporter.sendMail(mailOptions);
+        break;
+      } catch (e: any) {
+        const transient = /ECONNRESET|ETIMEDOUT|ESOCKET|ECONNECTION|ECONNREFUSED|EAI_AGAIN/i.test(
+          `${e.code || ''} ${e.message || ''}`
+        );
+        console.warn(`[EMAIL] gửi lần ${attempt} lỗi: ${e.message}${transient && attempt < 2 ? ' -> thử lại' : ''}`);
+        if (attempt < 2 && transient) {
+          await new Promise((r) => setTimeout(r, 1500));
+          continue;
+        }
+        throw e;
+      }
+    }
+
+    console.log('[EMAIL] sent', JSON.stringify({
+      from: email,
+      to,
+      cc: cc || undefined,
+      accepted: (result as any).accepted,
+      rejected: (result as any).rejected,
+      response: (result as any).response,
+      messageId: result.messageId,
+    }));
 
     return {
       success: true,

@@ -47,6 +47,8 @@ export interface ValidateResponse {
   phase: OnboardingPhase;
   status: 'Đủ' | 'Thiếu';
   missingDocuments: string[];
+  presentDocuments?: string[];
+  formatted?: string;
 }
 
 export interface EmailRequest {
@@ -70,6 +72,7 @@ export interface TicketResponse {
   title: string;
   description: string;
   labels: string[];
+  formatted?: string;
 }
 
 export interface SendEmailRequest {

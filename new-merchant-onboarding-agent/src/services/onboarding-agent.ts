@@ -73,19 +73,25 @@ export function validateDocuments(request: ValidateRequest): ValidateResponse {
   };
 
   const missingDocs: string[] = [];
+  const presentDocs: string[] = [];
   for (const required of phase.requiredDocuments) {
     const found = request.documents.some(
       (doc) => containsIgnoreCase(doc, required) || containsIgnoreCase(required, doc)
     );
-    if (!found) {
+    if (found) {
+      presentDocs.push(required);
+    } else {
       missingDocs.push(required);
     }
   }
 
+  const status: 'Đủ' | 'Thiếu' = missingDocs.length === 0 ? 'Đủ' : 'Thiếu';
   return {
     phase,
-    status: missingDocs.length === 0 ? 'Đủ' : 'Thiếu',
+    status,
     missingDocuments: missingDocs,
+    presentDocuments: presentDocs,
+    formatted: formatters.formatValidationResult(request.phaseNumber, status, presentDocs, missingDocs),
   };
 }
 
@@ -134,10 +140,15 @@ export function generateTicket(request: TicketRequest): TicketResponse {
     creditCard: request.paymentMethods.creditCard ? 'Có' : 'Không',
   };
 
+  const title = renderTemplate(tpl.subject, vars);
+  const description = renderTemplate(tpl.body, vars);
+  const labels = ['onboarding', 'payment-integration'];
+
   return {
-    title: renderTemplate(tpl.subject, vars),
-    description: renderTemplate(tpl.body, vars),
-    labels: ['onboarding', 'payment-integration'],
+    title,
+    description,
+    labels,
+    formatted: formatters.formatTicket(title, description, labels),
   };
 }
 

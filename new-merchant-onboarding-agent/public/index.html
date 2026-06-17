@@ -347,6 +347,18 @@
           <!-- Phase items loaded via API -->
         </div>
       </div>
+
+      <div class="sidebar-card" style="margin-top: 16px;">
+        <h3 class="sidebar-title">CC email tới</h3>
+        <p style="font-size: 12px; color: var(--zp-text-muted); margin-bottom: 10px; line-height: 1.5;">
+          Nhập địa chỉ email của những PIC liên quan cần CC.<br>
+          <span style="font-style: italic; color: var(--zp-text-muted);">(Disclaimer: BGK có thể test tính năng gửi email bằng cách nhập email tại đây)</span>
+        </p>
+        <input type="email" id="ccEmailInput" placeholder="email-cua-ban@example.com"
+          style="width:100%; padding:10px 12px; border:1px solid var(--zp-border); border-radius:8px; font-size:13px; font-family:var(--font-family); outline:none;"
+          oninput="saveCcEmail()">
+        <div id="ccEmailStatus" style="font-size:11px; color:var(--zp-green); margin-top:6px; min-height:14px;"></div>
+      </div>
     </aside>
 
     <!-- Chat Area -->
@@ -370,7 +382,7 @@
       <div class="quick-actions" id="quickActions">
         <button class="quick-btn" onclick="sendQuickMessage('Cho tôi xem quy trình onboarding')">📋 Quy trình</button>
         <button class="quick-btn" onclick="sendQuickMessage('Giai đoạn 1 có những gì?')">📌 Phase 1</button>
-        <button class="quick-btn" onclick="sendQuickMessage('Tạo email cho phase 1, merchant Công ty ABC')">📧 Tạo email</button>
+        <button class="quick-btn" onclick="startEmailFlow()">📧 Tạo email</button>
         <button class="quick-btn" onclick="sendQuickMessage('Tạo ticket cho phase 3, merchant Công ty ABC, Zalopay và VQR')">🎫 Tạo ticket</button>
         <button class="quick-btn" onclick="sendQuickMessage('Kiểm tra tài liệu phase 1, tôi đã nộp Giấy phép kinh doanh')">✅ Kiểm tra tài liệu</button>
       </div>
@@ -401,8 +413,48 @@
     let selectedPhase = null;
     let selectedFiles = [];
     let isSending = false;
+    let pendingEmailFlow = false;       // đang chờ user chọn file để gửi email
+    let pendingEmailMessage = '';
+    const DEFAULT_EMAIL_MSG = 'Gửi email phase 1 cho merchant Công ty ABC';
+
+    // Flow nút "Tạo email": yêu cầu chọn tài liệu đính kèm TRƯỚC, chọn xong mới gửi
+    function startEmailFlow() {
+      const typed = (document.getElementById('chatInput').value || '').trim();
+      pendingEmailMessage = typed || DEFAULT_EMAIL_MSG;
+      if (selectedFiles.length > 0) {
+        triggerPendingEmail(); // đã có file -> gửi luôn
+        return;
+      }
+      addBotMessage(
+        '📎 Vui lòng chọn <b>tài liệu cần đính kèm</b> để gửi cho PIC (vd: Giấy phép kinh doanh, draft hợp đồng…).<br>' +
+        'Sau khi chọn xong, email sẽ được tạo và gửi kèm tài liệu.',
+        true
+      );
+      pendingEmailFlow = true;
+      document.getElementById('fileInput').click();
+    }
+
+    function triggerPendingEmail() {
+      pendingEmailFlow = false;
+      document.getElementById('chatInput').value = pendingEmailMessage || DEFAULT_EMAIL_MSG;
+      pendingEmailMessage = '';
+      sendMessage();
+    }
+
+    // CC email cho giám khảo — lưu/khôi phục qua localStorage
+    function saveCcEmail() {
+      const v = (document.getElementById('ccEmailInput').value || '').trim();
+      localStorage.setItem('cc_email', v);
+      const st = document.getElementById('ccEmailStatus');
+      st.textContent = v ? '✓ Sẽ CC mọi email gửi đi về địa chỉ này' : '';
+    }
 
     document.addEventListener('DOMContentLoaded', async () => {
+      const savedCc = localStorage.getItem('cc_email') || '';
+      if (savedCc) {
+        document.getElementById('ccEmailInput').value = savedCc;
+        document.getElementById('ccEmailStatus').textContent = '✓ Sẽ CC mọi email gửi đi về địa chỉ này';
+      }
       await loadPhases();
       addBotMessage(
         'Xin chào! 👋<br><br>Tôi là <b>Merchant Onboarding Assistant</b>, sẵn sàng hỗ trợ bạn:<br><br>' +
@@ -463,6 +515,10 @@
       selectedFiles = Array.from(this.files);
       renderFileList();
       updateAttachButton();
+      // Nếu đang trong flow "Tạo email" và user vừa chọn file -> gửi email kèm file
+      if (pendingEmailFlow && selectedFiles.length > 0) {
+        triggerPendingEmail();
+      }
     });
 
     function renderFileList() {
@@ -506,6 +562,8 @@
       try {
         const formData = new FormData();
         formData.append('message', message || 'Vui lòng xử lý file đính kèm');
+        const ccEmail = (document.getElementById('ccEmailInput')?.value || '').trim();
+        if (ccEmail) formData.append('ccEmail', ccEmail);
         if (selectedFiles.length > 0) {
           formData.append('file', selectedFiles[0]); // backend nhận 1 file/lần
         }
