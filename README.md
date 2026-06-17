@@ -1,34 +1,43 @@
-Zalopay Merchant Onboarding - Multi-Agent System
+Zalopay Multi-Agent System - Chuẩn hóa quy trình vận hành (mini-ERP)
 
-Hệ thống gồm 3 AI Agent hỗ trợ toàn bộ quy trình onboarding merchant mới cho cổng thanh toán ZaloPay, xây dựng trên nền tảng GreenNode AgentBase (VNG Cloud). Mỗi agent đại diện cho một vai trò trong quy trình 4 giai đoạn: (1) Thẩm định Merchant - Compliance, (2) Review Hợp đồng - Legal, (3) Tích hợp kỹ thuật - Tech, (4) Tạo FA Code - Accounting.
+Nền tảng AI multi-agent giúp chuẩn hóa (standardize), theo dõi (tracking) và tự động hóa các quy trình vận hành đa phòng ban (cross-function) tại Zalopay: Business, Compliance, Legal, FP&A, Operations...
 
-Luồng tổng thể: BD dùng Onboarding Agent để chuẩn bị hồ sơ và gửi yêu cầu cho từng PIC; Compliance Agent duyệt hồ sơ Phase 1; Legal Agent rà soát hợp đồng Phase 2; BD tiếp tục Phase 3 và 4 đến khi merchant go-live.
+Vấn đề (painpoints):
+- Quy trình cross-functional nhiều bước, qua nhiều phòng ban; nhân sự mới khó nhớ trình tự, hồ sơ cần chuẩn bị và PIC từng giai đoạn - phụ thuộc "truyền miệng".
+- Thiếu chuẩn hóa: mỗi team làm một kiểu, dễ sai lệch, khó cập nhật đồng bộ khi policy/regulation thay đổi.
+- Communication phân mảnh qua nhiều kênh (email, chat, ticket) nên dễ miss request và không có single source of truth.
+
+Giải pháp: nhiều AI agent chuyên biệt, mỗi agent được "nhúng" kiến thức và quy trình chuẩn của một function, phối hợp theo workflow tiêu chuẩn để: (1) chuẩn hóa & đảm bảo nhất quán (dùng 24/7, cập nhật tập trung), (2) tăng khả năng quản lý tổng thể, (3) giảm rủi ro vận hành.
+
+Demo use case: Onboarding 1 merchant mới - gồm 3 agent tương ứng 3 function.
 
 
-1. Merchant Onboarding Agent (POV: BD)
-
-- Giải quyết vấn đề gì: BD mất thời gian tra cứu quy trình, soạn email và ticket thủ công, dễ thiếu sót tài liệu. Agent tự động hoá và chuẩn hoá toàn bộ thao tác này.
-- Ai sử dụng: đội Business Development (BD) của ZaloPay - người trực tiếp onboarding merchant mới.
-- Hoạt động thế nào: BD chat bằng tiếng Việt; agent giải đáp quy trình, kiểm tra tài liệu đủ hay thiếu, tạo và gửi email thật cho PIC ở Phase 1/2/4 (kèm tài liệu đính kèm và CC cho người cần theo dõi), tạo ticket Jira cho Phase 3, và tra cứu mã số thuế doanh nghiệp.
-- Giá trị mang lại: rút ngắn thời gian onboarding, chuẩn hoá nội dung và gửi đúng người nhận, giảm sai sót, đính kèm đúng tài liệu ngay từ đầu nên rút ngắn vòng phê duyệt.
-
+1. Biz Agent (POV: Business)
+- Giải quyết vấn đề gì: BD khó nhớ quy trình, dễ thiếu hồ sơ, phải thao tác thủ công và phụ thuộc người có kinh nghiệm.
+- Ai sử dụng: nhân viên Business (BD).
+- Hoạt động thế nào: là giao diện chính cho BD; hướng dẫn thu thập đủ thông tin ngay từ đầu, điều phối quy trình, chuyển risk brief + legal brief thành hành động cụ thể (gửi email/tạo ticket cho PIC), cung cấp timeline dự kiến và next steps, xử lý FAQ về quy trình.
+- Giá trị mang lại: rút ngắn thời gian onboarding, chuẩn hóa thao tác, giảm sai sót và giảm phụ thuộc cá nhân.
 
 2. Compliance Agent (POV: Compliance)
+- Giải quyết vấn đề gì: thẩm định và đánh giá rủi ro đối tác làm thủ công, dễ thiếu sót, khó nhất quán.
+- Ai sử dụng: đội Compliance.
+- Hoạt động thế nào: tự động KYC/KYB theo tiêu chí nội bộ; chấm điểm rủi ro (risk scoring) dựa trên MST, ngành nghề kinh doanh và người đại diện; đối chiếu watchlist và danh mục ngành bị hạn chế; phân loại merchant theo risk tier (low/medium/high/unacceptable) và trả risk brief cho Biz.
+- Giá trị mang lại: thẩm định nhất quán và minh bạch, giảm rủi ro vận hành ngay từ đầu quy trình.
 
-- Giải quyết vấn đề gì: Compliance phải theo dõi nhiều hồ sơ chờ duyệt và phản hồi BD một cách phân tán. Agent giúp quản lý hàng đợi hồ sơ và ra quyết định tập trung.
-- Ai sử dụng: đội Compliance - người thẩm định và phê duyệt hồ sơ merchant ở Phase 1.
-- Hoạt động thế nào: nhận yêu cầu thẩm định từ Biz, đưa vào hàng đợi chờ duyệt; Compliance quyết định Approve (cho phép sang Phase 2) hoặc Reject kèm lý do và tài liệu cần bổ sung; agent tự động gửi email thông báo kết quả cho BD.
-- Giá trị mang lại: tập trung theo dõi mọi hồ sơ Phase 1, quyết định minh bạch (luôn kèm lý do khi từ chối), khép vòng phản hồi tự động giữa Compliance và BD.
-
-
-3. Legal Contract Review Agent (POV: Legal)
-
-- Giải quyết vấn đề gì: rà soát hợp đồng thủ công tốn thời gian và dễ bỏ sót điều khoản. Agent hỗ trợ rà soát theo checklist và ra quyết định pháp lý nhất quán.
-- Ai sử dụng: đội Legal - người rà soát và phê duyệt hợp đồng dịch vụ merchant ở Phase 2.
-- Hoạt động thế nào: nhận draft hợp đồng từ BD (sau khi Compliance đã duyệt Phase 1), rà soát các điều khoản theo Legal Checklist, ra một trong ba quyết định kèm lý do: Approve, Reject, hoặc Request Revision (yêu cầu chỉnh sửa); theo dõi trạng thái hợp đồng và thông báo cho BD.
-- Giá trị mang lại: giảm rủi ro pháp lý nhờ rà soát theo bộ tiêu chí chuẩn, phản hồi rõ ràng giúp BD và merchant xử lý nhanh, rút ngắn thời gian từ draft đến khi ký kết.
+3. Legal Agent (POV: Legal)
+- Giải quyết vấn đề gì: rà soát hợp đồng từ đầu tốn thời gian, dễ bỏ sót điều khoản rủi ro.
+- Ai sử dụng: đội Legal.
+- Hoạt động thế nào: được trigger sau Compliance; chọn template hợp đồng và tùy chỉnh điều khoản theo mô hình hợp tác; flag (đánh dấu) các điểm cần Legal review trực tiếp; tạo legal brief để Legal "chỉ review điểm được flag" thay vì đọc lại từ đầu.
+- Giá trị mang lại: giảm rủi ro pháp lý, giảm tải cho Legal, rút ngắn thời gian xử lý hợp đồng.
 
 
-Tech stack: Node.js + TypeScript + Express, LLM MiniMax (qua VNG Cloud MaaS, OpenAI-compatible), Docker, GreenNode AgentBase Runtime.
+Cách 3 agent phối hợp (Sequential trigger + shared context):
+Biz thu thập hồ sơ merchant -> kích hoạt Compliance -> Compliance trả risk brief + risk tier -> chuyển Legal -> Legal tạo legal brief + flag -> trường hợp high-risk thì chuyển human review -> Biz tổng hợp timeline, điều kiện và next steps.
+
+Impact: nhân sự mới catch-up nhanh hơn; chuẩn hóa giảm phụ thuộc cá nhân và giảm rủi ro vận hành; cross-team collaboration hiệu quả hơn; rút ngắn thời gian onboarding.
+
+Tech stack: Node.js + TypeScript + Express, LLM MiniMax (VNG Cloud MaaS, OpenAI-compatible), Docker, GreenNode AgentBase Runtime.
+
+Roadmap: hiện 3 agent còn hoạt động rời rạc. Hướng phát triển: Orchestrator Agent điều phối end-to-end (state machine, retry, escalation), real-time dashboard (single source of truth), ERP tập trung; mở rộng sang các function khác (Finance, HR, Procurement).
 
 Tài liệu chi tiết và hướng dẫn chạy/triển khai: xem file DOCS.md
